@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NavSidebar } from "./components/NavSidebar";
 import { Portfolio } from "./pages/Portfolio";
+import { Rollout } from "./pages/Rollout";
 import { BrandDetail } from "./pages/BrandDetail";
 import { BrandConfig } from "./pages/BrandConfig";
+import { BrandRollout } from "./pages/BrandRollout";
 
 function App() {
   return (
@@ -12,8 +14,10 @@ function App() {
         <main className="flex-1 min-w-0">
           <Routes>
             <Route path="/" element={<Portfolio />} />
+            <Route path="/rollout" element={<Rollout />} />
             <Route path="/brand/:id" element={<BrandDetail />} />
             <Route path="/brand/:id/config" element={<BrandConfig />} />
+            <Route path="/brand/:id/rollout" element={<BrandRollout />} />
           </Routes>
         </main>
       </div>

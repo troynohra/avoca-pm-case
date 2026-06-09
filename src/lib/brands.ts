@@ -12,6 +12,13 @@ export interface UnbookedReason {
   recoverable: boolean; // false = structural (out of area, not offered, etc.)
 }
 
+export interface ProductStatus {
+  purchased: boolean;
+  live: boolean;
+  setupDone: number;
+  setupTotal: number;
+}
+
 export interface Brand {
   id: string;
   name: string;
@@ -35,6 +42,12 @@ export interface Brand {
     summary: string;
     fixLabel: string; // lever name — maps to the highlighted config section
     peerName: string;
+  };
+  products: {
+    responder: ProductStatus;
+    coach: ProductStatus;
+    outbound: ProductStatus;
+    speedToLead: ProductStatus;
   };
 }
 
@@ -71,6 +84,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "Objection Handling",
       peerName: "Desert Comfort HVAC",
     },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true,  live: false, setupDone: 2, setupTotal: 5 },
+      outbound:    { purchased: true,  live: false, setupDone: 1, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "lone-star-plumbing",
@@ -101,6 +120,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "After-Hours Routing",
       peerName: "Gulf Coast Plumbers",
     },
+    products: {
+      responder:   { purchased: true,  live: false, setupDone: 3, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "midwest-electric-co",
@@ -130,6 +155,12 @@ export const initialBrands: Brand[] = [
       summary: "Losing 1.6× peers at scheduling due to technician availability gaps.",
       fixLabel: "Booking Windows / On-Call Calendar",
       peerName: "Volt Masters Electric",
+    },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
     },
   },
 
@@ -163,6 +194,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      outbound:    { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      speedToLead: { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+    },
   },
   {
     id: "gulf-coast-plumbers",
@@ -192,6 +229,12 @@ export const initialBrands: Brand[] = [
       summary: "Benchmark performer for Plumbing — strong after-hours routing.",
       fixLabel: "N/A",
       peerName: "N/A",
+    },
+    products: {
+      responder:   { purchased: true, live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true, live: true,  setupDone: 5, setupTotal: 5 },
+      outbound:    { purchased: true, live: false, setupDone: 4, setupTotal: 5 },
+      speedToLead: { purchased: true, live: false, setupDone: 2, setupTotal: 5 },
     },
   },
   {
@@ -223,6 +266,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true, live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true, live: false, setupDone: 3, setupTotal: 5 },
+      outbound:    { purchased: true, live: true,  setupDone: 5, setupTotal: 5 },
+      speedToLead: { purchased: true, live: false, setupDone: 3, setupTotal: 5 },
+    },
   },
   {
     id: "northeast-hvac-group",
@@ -252,6 +301,12 @@ export const initialBrands: Brand[] = [
       summary: "Above-average performance for HVAC Northeast.",
       fixLabel: "N/A",
       peerName: "N/A",
+    },
+    products: {
+      responder:   { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      outbound:    { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
+      speedToLead: { purchased: true, live: true, setupDone: 5, setupTotal: 5 },
     },
   },
   {
@@ -283,6 +338,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true,  live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "tri-state-electric",
@@ -312,6 +373,12 @@ export const initialBrands: Brand[] = [
       summary: "Strong performer in Electrical Northeast.",
       fixLabel: "N/A",
       peerName: "N/A",
+    },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
     },
   },
   {
@@ -343,6 +410,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "rockies-hvac",
@@ -373,6 +446,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "appalachian-electric",
@@ -402,6 +481,12 @@ export const initialBrands: Brand[] = [
       summary: "Consistent above-benchmark performer.",
       fixLabel: "N/A",
       peerName: "N/A",
+    },
+    products: {
+      responder:   { purchased: true,  live: true,  setupDone: 5, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
     },
   },
 
@@ -435,6 +520,12 @@ export const initialBrands: Brand[] = [
       fixLabel: "N/A",
       peerName: "N/A",
     },
+    products: {
+      responder:   { purchased: true,  live: false, setupDone: 1, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+    },
   },
   {
     id: "lone-star-electric",
@@ -464,6 +555,12 @@ export const initialBrands: Brand[] = [
       summary: "Insufficient call volume for reliable diagnosis. Check back after 150+ calls.",
       fixLabel: "N/A",
       peerName: "N/A",
+    },
+    products: {
+      responder:   { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      coach:       { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      outbound:    { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
+      speedToLead: { purchased: false, live: false, setupDone: 0, setupTotal: 5 },
     },
   },
 ];

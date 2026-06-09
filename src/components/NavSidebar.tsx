@@ -28,7 +28,8 @@ export function NavSidebar() {
   const parts = location.pathname.split("/");
   const activeBrandId = parts[1] === "brand" ? parts[2] : null;
   const activeBrand = activeBrandId ? brands.find((b) => b.id === activeBrandId) : null;
-  const contextLabel = activeBrand ? activeBrand.name : "Portfolio Overview";
+  const isRollout = location.pathname === "/rollout";
+  const contextLabel = "Portfolio Overview";
 
   // Close on outside click
   useEffect(() => {
@@ -132,15 +133,33 @@ export function NavSidebar() {
       </div>
 
       {/* ── Nav ────────────────────────────────────────────────────────── */}
-      <div className="px-3 pt-2 pb-1">
+      <div className="px-3 pt-3 pb-1">
+        <p className="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Portfolio</p>
         <button
           onClick={() => navigate("/")}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left bg-white/10 text-white"
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
+            !activeBrandId && !isRollout
+              ? "bg-white/10 text-white"
+              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+          }`}
         >
           <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
           Overview
+        </button>
+        <button
+          onClick={() => navigate("/rollout")}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
+            isRollout
+              ? "bg-white/10 text-white"
+              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+          }`}
+        >
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          Rollout
         </button>
       </div>
 
