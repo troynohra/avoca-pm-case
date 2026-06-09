@@ -27,7 +27,6 @@ export function NavSidebar() {
   // Derive active context from URL
   const parts = location.pathname.split("/");
   const activeBrandId = parts[1] === "brand" ? parts[2] : null;
-  const activeBrand = activeBrandId ? brands.find((b) => b.id === activeBrandId) : null;
   const isRollout = location.pathname === "/rollout";
   const contextLabel = "Portfolio Overview";
 
