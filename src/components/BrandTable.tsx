@@ -3,11 +3,6 @@ import { type Brand, sortBrandsWorstFirst } from "../lib/brands";
 import { StatusBadge } from "./StatusBadge";
 import { useDemoState } from "../lib/store";
 
-function portfolioAvgForBrand(brand: Brand, allBrands: Brand[]): number {
-  const others = allBrands.filter((b) => b.id !== brand.id && b.trade === brand.trade);
-  const pool = others.length >= 2 ? others : allBrands.filter((b) => b.id !== brand.id);
-  return Math.round(pool.reduce((s, b) => s + b.bookingRate, 0) / pool.length);
-}
 
 function fmtCurrency(n: number) {
   if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`;
@@ -25,8 +20,6 @@ export function BrandTable() {
   if (filters.crm) filtered = filtered.filter((b) => b.crm === filters.crm);
 
   const sorted = sortBrandsWorstFirst(filtered);
-  // allBrands (unfiltered) for portfolio-average calculation
-  const allBrands = brands;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -46,7 +39,6 @@ export function BrandTable() {
             <BrandRow
               key={brand.id}
               brand={brand}
-              allBrands={allBrands}
               onClick={() => navigate(`/brand/${brand.id}`)}
             />
           ))}
@@ -63,9 +55,7 @@ export function BrandTable() {
   );
 }
 
-function BrandRow({ brand, allBrands, onClick }: { brand: Brand; allBrands: Brand[]; onClick: () => void }) {
-  const portAvg = portfolioAvgForBrand(brand, allBrands);
-  const vsPortfolio = brand.bookingRate - portAvg;
+function BrandRow({ brand, onClick }: { brand: Brand; onClick: () => void }) {
 
   return (
     <tr
@@ -90,9 +80,6 @@ function BrandRow({ brand, allBrands, onClick }: { brand: Brand; allBrands: Bran
               <div className={`text-xs font-medium mt-0.5 ${brand.bookingTrend.delta < 0 ? "text-red-600" : brand.bookingTrend.delta > 0 ? "text-emerald-600" : "text-gray-400"}`}>
                 {brand.bookingTrend.delta < 0 ? "↓" : brand.bookingTrend.delta > 0 ? "↑" : "→"}
                 {brand.bookingTrend.delta !== 0 ? `${Math.abs(brand.bookingTrend.delta)} pts / ${brand.bookingTrend.weeks}wk` : `flat / ${brand.bookingTrend.weeks}wk`}
-              </div>
-              <div className={`text-[11px] mt-0.5 ${vsPortfolio < -3 ? "text-red-400" : "text-gray-400"}`}>
-                portfolio avg: {portAvg}%{vsPortfolio !== 0 ? ` (${vsPortfolio > 0 ? "+" : ""}${vsPortfolio})` : ""}
               </div>
             </>
           )}
