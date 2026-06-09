@@ -1,5 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDemoState } from "../lib/store";
+import type { Brand } from "../lib/brands";
+
+function portfolioAvgForBrand(brand: Brand, allBrands: Brand[]): number {
+  const others = allBrands.filter((b) => b.id !== brand.id && b.trade === brand.trade);
+  const pool = others.length >= 2 ? others : allBrands.filter((b) => b.id !== brand.id);
+  return Math.round(pool.reduce((s, b) => s + b.bookingRate, 0) / pool.length);
+}
 import { MetricTile } from "../components/MetricTile";
 import { StatusBadge } from "../components/StatusBadge";
 import { RecommendationCard } from "../components/RecommendationCard";
@@ -15,6 +22,7 @@ export function BrandDetail() {
   const navigate = useNavigate();
 
   const brand = brands.find((b) => b.id === id);
+  const portAvg = brand ? portfolioAvgForBrand(brand, brands) : 0;
   if (!brand) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
@@ -28,8 +36,14 @@ export function BrandDetail() {
     );
   }
 
-  const delta = brand.bookingRate - brand.peerBenchmark;
+  const vsPortfolio = brand.bookingRate - portAvg;
   const maxPct = Math.max(...brand.topUnbookedReasons.flatMap((r) => [r.brandPct, r.peerPct]), 40);
+
+  // Derive recommendation from top recoverable outlier (largest positive gap over peer)
+  const topRecoverable = [...brand.topUnbookedReasons]
+    .filter((r) => r.recoverable)
+    .sort((a, b) => (b.brandPct - b.peerPct) - (a.brandPct - a.peerPct))[0];
+  const hasFix = topRecoverable && (topRecoverable.brandPct - topRecoverable.peerPct) > 2;
 
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
@@ -68,8 +82,12 @@ export function BrandDetail() {
           <MetricTile
             label="Booking Rate"
             value={`${brand.bookingRate}%`}
-            trend={delta >= 0 ? "up" : "down"}
-            trendLabel={`${delta >= 0 ? "+" : ""}${delta}% vs peer avg (${brand.peerBenchmark}%)`}
+            trend={brand.bookingTrend.delta < 0 ? "down" : brand.bookingTrend.delta > 0 ? "up" : "neutral"}
+            trendLabel={
+              brand.bookingTrend.delta !== 0
+                ? `${brand.bookingTrend.delta > 0 ? "↑" : "↓"}${Math.abs(brand.bookingTrend.delta)} pts / ${brand.bookingTrend.weeks}wk · portfolio avg ${portAvg}% (${vsPortfolio >= 0 ? "+" : ""}${vsPortfolio})`
+                : `Flat / ${brand.bookingTrend.weeks}wk · portfolio avg ${portAvg}%`
+            }
           />
           <MetricTile
             label="Containment"
@@ -83,10 +101,10 @@ export function BrandDetail() {
             trendLabel={brand.transferRate > 35 ? "High — watch" : "Within range"}
           />
           <MetricTile
-            label="Revenue at Risk"
-            value={fmtCurrency(brand.revenueAtRisk)}
-            trend={brand.revenueAtRisk > 10000 ? "down" : "neutral"}
-            trendLabel="MTD unbooked qualified demand"
+            label="Recoverable at Risk"
+            value={fmtCurrency(brand.recoverableAtRisk)}
+            trend={brand.recoverableAtRisk > 10000 ? "down" : "neutral"}
+            trendLabel={`of ${fmtCurrency(brand.revenueAtRisk)} total · fixable via config`}
           />
         </div>
 
@@ -95,55 +113,71 @@ export function BrandDetail() {
           <h2 className="font-bold text-gray-900 text-base mb-1">Why is this brand flagged?</h2>
           <p className="text-sm text-gray-500 mb-5">Top unbooked reasons vs peer set for same trade &amp; region.</p>
 
-          <div className="space-y-4 mb-6">
-            {brand.topUnbookedReasons.map((reason, i) => (
-              <div key={i}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-gray-800">{reason.label}</span>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm font-bold ${reason.brandPct > reason.peerPct * 1.4 ? "text-red-600" : "text-gray-700"}`}>
-                      This brand: {reason.brandPct}%
-                      {reason.brandPct > reason.peerPct * 1.4 && (
-                        <span className="ml-1 text-xs text-red-500">
-                          (~{(reason.brandPct / reason.peerPct).toFixed(1)}x peers)
+          <div className="space-y-5 mb-6">
+            {brand.topUnbookedReasons.map((reason, i) => {
+              const gap = reason.brandPct - reason.peerPct;
+              const isOutlier = reason.recoverable && gap > 2;
+              const isTopFix = topRecoverable?.label === reason.label && hasFix;
+              return (
+                <div key={i} className={`rounded-lg p-3 -mx-1 ${isTopFix ? "bg-red-50 border border-red-100" : ""}`}>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-sm font-semibold ${isOutlier ? "text-red-700" : "text-gray-800"}`}>
+                        {reason.label}
+                      </span>
+                      {isTopFix && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white uppercase tracking-wide">
+                          Top fix
                         </span>
                       )}
+                      {!reason.recoverable ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                          Structural
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                          {reason.lever}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {isOutlier && (
+                        <span className="text-xs font-bold text-red-600">
+                          +{gap}pp · {(reason.brandPct / reason.peerPct).toFixed(1)}×
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Brand bar */}
+                  <div className="flex gap-1.5 items-center">
+                    <span className="text-[10px] text-gray-400 w-20 flex-shrink-0">This brand</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-2 relative overflow-hidden">
+                      <div
+                        className={`absolute left-0 top-0 h-full rounded-full ${
+                          isOutlier ? "bg-red-500" : reason.recoverable ? "bg-blue-400" : "bg-gray-300"
+                        }`}
+                        style={{ width: `${(reason.brandPct / maxPct) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-semibold w-8 text-right ${isOutlier ? "text-red-600" : "text-gray-600"}`}>
+                      {reason.brandPct}%
                     </span>
-                    <span className="text-xs text-gray-400">Peer avg: {reason.peerPct}%</span>
+                  </div>
+                  {/* Peer bar */}
+                  <div className="flex gap-1.5 items-center mt-1">
+                    <span className="text-[10px] text-gray-400 w-20 flex-shrink-0">Portfolio avg</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-1.5 relative overflow-hidden">
+                      <div
+                        className="absolute left-0 top-0 h-full rounded-full bg-gray-400"
+                        style={{ width: `${(reason.peerPct / maxPct) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-400 w-8 text-right">{reason.peerPct}%</span>
                   </div>
                 </div>
-                <div className="flex gap-1.5 items-center">
-                  <div className="flex-1 bg-gray-100 rounded-full h-2 relative overflow-hidden">
-                    <div
-                      className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                        reason.brandPct > reason.peerPct * 1.4 ? "bg-red-500" : "bg-blue-500"
-                      }`}
-                      style={{ width: `${(reason.brandPct / maxPct) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-400 w-8 text-right">{reason.brandPct}%</span>
-                </div>
-                <div className="flex gap-1.5 items-center mt-0.5">
-                  <div className="flex-1 bg-gray-100 rounded-full h-1.5 relative overflow-hidden">
-                    <div
-                      className="absolute left-0 top-0 h-full rounded-full bg-gray-400"
-                      style={{ width: `${(reason.peerPct / maxPct) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-400 w-8 text-right">{reason.peerPct}%</span>
-                </div>
-                <div className="flex gap-4 mt-1">
-                  <div className="flex items-center gap-1">
-                    <span className={`w-2 h-2 rounded-full inline-block ${reason.brandPct > reason.peerPct * 1.4 ? "bg-red-500" : "bg-blue-500"}`} />
-                    <span className="text-[10px] text-gray-400">This brand</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full inline-block bg-gray-400" />
-                    <span className="text-[10px] text-gray-400">Peer avg</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Drop-off stage */}
@@ -177,12 +211,12 @@ export function BrandDetail() {
         </div>
 
         {/* Recommendation */}
-        {brand.status !== "recovered" && (
+        {brand.status !== "recovered" && hasFix && (
           <RecommendationCard
             brandId={brand.id}
             summary={brand.recommendation.summary}
             peerName={brand.recommendation.peerName}
-            fixLabel={brand.recommendation.fixLabel}
+            fixLabel={topRecoverable?.lever ?? brand.recommendation.fixLabel}
           />
         )}
         {brand.status === "recovered" && (

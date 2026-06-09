@@ -10,10 +10,11 @@ function fmtCurrency(n: number) {
 }
 
 export function Portfolio() {
-  const { brands, recoveredThisWeek } = useDemoState();
+  const { brands } = useDemoState();
 
   const totalBooked = brands.reduce((s, b) => s + b.revenueBooked, 0);
   const totalAtRisk = brands.reduce((s, b) => s + b.revenueAtRisk, 0);
+  const totalRecoverable = brands.reduce((s, b) => s + b.recoverableAtRisk, 0);
   const brandsLive = brands.length;
   const brandsFlagged = brands.filter((b) => b.status === "slipping").length;
 
@@ -36,8 +37,8 @@ export function Portfolio() {
       </div>
 
       <div className="px-8 py-6 space-y-6">
-        {/* KPI strip */}
-        <div className="grid grid-cols-5 gap-4">
+        {/* KPI strip — 4 tiles */}
+        <div className="grid grid-cols-4 gap-4">
           <MetricTile
             label="Portfolio Booked"
             value={fmtCurrency(totalBooked)}
@@ -45,10 +46,11 @@ export function Portfolio() {
             trendLabel="4.3% vs last month"
           />
           <MetricTile
-            label="Revenue at Risk"
-            value={fmtCurrency(totalAtRisk)}
-            trend={totalAtRisk > 50000 ? "down" : "neutral"}
-            trendLabel={totalAtRisk > 10000 ? "Unbooked qualified demand" : "Near zero — good"}
+            label="Recoverable at Risk"
+            value={fmtCurrency(totalRecoverable)}
+            highlight
+            trend={totalRecoverable > 50000 ? "down" : "neutral"}
+            trendLabel={`of ${fmtCurrency(totalAtRisk)} total · fixable via config`}
           />
           <MetricTile
             label="Brands Live"
@@ -59,14 +61,7 @@ export function Portfolio() {
             label="Brands Flagged"
             value={brandsFlagged}
             trend={brandsFlagged > 0 ? "down" : "neutral"}
-            trendLabel={brandsFlagged > 0 ? "Needs attention" : "All clear"}
-          />
-          <MetricTile
-            label="Recovered This Week"
-            value={recoveredThisWeek}
-            highlight
-            trend={recoveredThisWeek > 0 ? "up" : "neutral"}
-            trendLabel={recoveredThisWeek > 0 ? `${recoveredThisWeek} brand${recoveredThisWeek > 1 ? "s" : ""} fixed` : "North-star metric"}
+            trendLabel={brandsFlagged > 0 ? `${brandsFlagged} need attention` : "All clear"}
           />
         </div>
 
@@ -79,7 +74,7 @@ export function Portfolio() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wide">All Brands — Worst First</h2>
-            <span className="text-xs text-gray-400">Sorted by gap × revenue at risk</span>
+            <span className="text-xs text-gray-400">Sorted by recoverable revenue at risk</span>
           </div>
           <BrandTable />
         </div>

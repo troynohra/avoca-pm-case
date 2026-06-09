@@ -3,6 +3,12 @@ import { type Brand, sortBrandsWorstFirst } from "../lib/brands";
 import { StatusBadge } from "./StatusBadge";
 import { useDemoState } from "../lib/store";
 
+function portfolioAvgForBrand(brand: Brand, allBrands: Brand[]): number {
+  const others = allBrands.filter((b) => b.id !== brand.id && b.trade === brand.trade);
+  const pool = others.length >= 2 ? others : allBrands.filter((b) => b.id !== brand.id);
+  return Math.round(pool.reduce((s, b) => s + b.bookingRate, 0) / pool.length);
+}
+
 function fmtCurrency(n: number) {
   if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`;
   return `$${n}`;
@@ -19,6 +25,8 @@ export function BrandTable() {
   if (filters.crm) filtered = filtered.filter((b) => b.crm === filters.crm);
 
   const sorted = sortBrandsWorstFirst(filtered);
+  // allBrands (unfiltered) for portfolio-average calculation
+  const allBrands = brands;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -29,7 +37,7 @@ export function BrandTable() {
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Trade</th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Region</th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Booking Rate</th>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Rev at Risk</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Recoverable Risk</th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Status</th>
           </tr>
         </thead>
@@ -38,6 +46,7 @@ export function BrandTable() {
             <BrandRow
               key={brand.id}
               brand={brand}
+              allBrands={allBrands}
               onClick={() => navigate(`/brand/${brand.id}`)}
             />
           ))}
@@ -54,9 +63,9 @@ export function BrandTable() {
   );
 }
 
-function BrandRow({ brand, onClick }: { brand: Brand; onClick: () => void }) {
-  const delta = brand.bookingRate - brand.peerBenchmark;
-  const isBelow = delta < 0;
+function BrandRow({ brand, allBrands, onClick }: { brand: Brand; allBrands: Brand[]; onClick: () => void }) {
+  const portAvg = portfolioAvgForBrand(brand, allBrands);
+  const vsPortfolio = brand.bookingRate - portAvg;
 
   return (
     <tr
@@ -74,23 +83,36 @@ function BrandRow({ brand, onClick }: { brand: Brand; onClick: () => void }) {
       <td className="px-4 py-3.5 text-gray-600">{brand.trade}</td>
       <td className="px-4 py-3.5 text-gray-600">{brand.region}</td>
       <td className="px-4 py-3.5">
-        <div className="flex items-center gap-2">
+        <div>
           <span className="font-semibold text-gray-900">{brand.bookingRate}%</span>
-          <span
-            className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-              isBelow
-                ? "text-red-700 bg-red-50"
-                : "text-emerald-700 bg-emerald-50"
-            }`}
-          >
-            {isBelow ? "" : "+"}{delta}% vs peer
-          </span>
+          {brand.status !== "ramping" && (
+            <>
+              <div className={`text-xs font-medium mt-0.5 ${brand.bookingTrend.delta < 0 ? "text-red-600" : brand.bookingTrend.delta > 0 ? "text-emerald-600" : "text-gray-400"}`}>
+                {brand.bookingTrend.delta < 0 ? "↓" : brand.bookingTrend.delta > 0 ? "↑" : "→"}
+                {brand.bookingTrend.delta !== 0 ? `${Math.abs(brand.bookingTrend.delta)} pts / ${brand.bookingTrend.weeks}wk` : `flat / ${brand.bookingTrend.weeks}wk`}
+              </div>
+              <div className={`text-[11px] mt-0.5 ${vsPortfolio < -3 ? "text-red-400" : "text-gray-400"}`}>
+                portfolio avg: {portAvg}%{vsPortfolio !== 0 ? ` (${vsPortfolio > 0 ? "+" : ""}${vsPortfolio})` : ""}
+              </div>
+            </>
+          )}
         </div>
       </td>
       <td className="px-4 py-3.5">
-        <span className={`font-semibold ${brand.revenueAtRisk > 10000 ? "text-red-700" : "text-gray-700"}`}>
-          {fmtCurrency(brand.revenueAtRisk)}
-        </span>
+        {brand.status === "ramping" ? (
+          <span className="text-gray-400 text-xs">— ramping</span>
+        ) : (
+          <div>
+            <span className={`font-semibold ${brand.recoverableAtRisk > 10000 ? "text-red-700" : "text-gray-700"}`}>
+              {fmtCurrency(brand.recoverableAtRisk)}
+            </span>
+            {brand.recoverableAtRisk < brand.revenueAtRisk && (
+              <span className="block text-[11px] text-gray-400">
+                {fmtCurrency(brand.revenueAtRisk)} total
+              </span>
+            )}
+          </div>
+        )}
       </td>
       <td className="px-4 py-3.5">
         <StatusBadge status={brand.status} />

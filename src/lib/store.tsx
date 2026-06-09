@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useRef, useState } from "react";
 import { type Brand, initialBrands } from "./brands";
 
-interface Filters {
+export interface Filters {
   trade: string | null;
   region: string | null;
   cohort: string | null;
@@ -41,6 +41,7 @@ export function DemoStateProvider({ children }: { children: React.ReactNode }) {
           status: "recovered" as const,
           bookingRate: Math.min(b.peerBenchmark - 2, b.bookingRate + 13),
           revenueAtRisk: Math.round(b.revenueAtRisk * 0.04),
+          recoverableAtRisk: Math.round(b.recoverableAtRisk * 0.04),
         };
       })
     );

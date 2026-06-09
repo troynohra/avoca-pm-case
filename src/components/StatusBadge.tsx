@@ -21,6 +21,14 @@ export function StatusBadge({ status }: Props) {
       </span>
     );
   }
+  if (status === "ramping") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+        Ramping
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
