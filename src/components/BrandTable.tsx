@@ -30,7 +30,14 @@ export function BrandTable() {
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Trade</th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Region</th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Booking Rate</th>
-            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Recoverable Risk</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <span className="flex items-center gap-1">
+                Recoverable Risk
+                <svg className="w-3 h-3 text-blue-500" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 10V2M6 2L3 5M6 2L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </th>
             <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Status</th>
           </tr>
         </thead>

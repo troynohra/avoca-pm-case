@@ -49,15 +49,26 @@ export function BrandDetail() {
     <div className="flex-1 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-5">
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-3 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Portfolio
-        </button>
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Portfolio
+          </button>
+          <button
+            onClick={() => alert(`Switch to ${brand.name} workspace`)}
+            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            Open {brand.name} workspace
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </button>
+        </div>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-black tracking-tight">
@@ -104,7 +115,7 @@ export function BrandDetail() {
             label="Recoverable at Risk"
             value={fmtCurrency(brand.recoverableAtRisk)}
             trend={brand.recoverableAtRisk > 10000 ? "down" : "neutral"}
-            trendLabel={`of ${fmtCurrency(brand.revenueAtRisk)} total · fixable via config`}
+            trendLabel={`of ${fmtCurrency(brand.revenueAtRisk)} total`}
           />
         </div>
 

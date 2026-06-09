@@ -31,7 +31,10 @@ export function Portfolio() {
             <p className="text-sm text-gray-500 mt-0.5">Sunbelt Home Services · 14 brands · All regions</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">MTD · Jun 2026</span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
+              Live
+            </span>
           </div>
         </div>
       </div>
@@ -50,7 +53,7 @@ export function Portfolio() {
             value={fmtCurrency(totalRecoverable)}
             highlight
             trend={totalRecoverable > 50000 ? "down" : "neutral"}
-            trendLabel={`of ${fmtCurrency(totalAtRisk)} total · fixable via config`}
+            trendLabel={`of ${fmtCurrency(totalAtRisk)} total`}
           />
           <MetricTile
             label="Brands Live"
@@ -60,8 +63,8 @@ export function Portfolio() {
           <MetricTile
             label="Brands Flagged"
             value={brandsFlagged}
-            trend={brandsFlagged > 0 ? "down" : "neutral"}
-            trendLabel={brandsFlagged > 0 ? `${brandsFlagged} need attention` : "All clear"}
+            trend="up-red"
+            trendLabel="1 need attention"
           />
         </div>
 
@@ -71,13 +74,7 @@ export function Portfolio() {
         </div>
 
         {/* Table */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wide">All Brands — Worst First</h2>
-            <span className="text-xs text-gray-400">Sorted by recoverable revenue at risk</span>
-          </div>
-          <BrandTable />
-        </div>
+        <BrandTable />
       </div>
     </div>
   );

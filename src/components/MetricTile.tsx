@@ -3,7 +3,7 @@ interface Props {
   value: string | number;
   sub?: string;
   highlight?: boolean;
-  trend?: "up" | "down" | "neutral";
+  trend?: "up" | "down" | "neutral" | "up-red";
   trendLabel?: string;
 }
 
@@ -27,12 +27,17 @@ export function MetricTile({ label, value, sub, highlight, trend, trendLabel }: 
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
             </svg>
           )}
+          {trend === "up-red" && (
+            <svg className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          )}
           {trend === "down" && (
             <svg className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           )}
-          <span className={`text-xs ${trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-600" : "text-gray-500"}`}>
+          <span className={`text-xs ${trend === "up" ? "text-emerald-600" : trend === "down" || trend === "up-red" ? "text-red-600" : "text-gray-500"}`}>
             {trendLabel || sub}
           </span>
         </div>
