@@ -1,0 +1,114 @@
+import { useNavigate } from "react-router-dom";
+import { type Brand, sortBrandsWorstFirst } from "../lib/brands";
+import { StatusBadge } from "./StatusBadge";
+import { useDemoState } from "../lib/store";
+
+function fmtCurrency(n: number) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`;
+  return `$${n}`;
+}
+
+export function BrandTable() {
+  const { brands, filters } = useDemoState();
+  const navigate = useNavigate();
+
+  let filtered = brands;
+  if (filters.trade) filtered = filtered.filter((b) => b.trade === filters.trade);
+  if (filters.region) filtered = filtered.filter((b) => b.region === filters.region);
+  if (filters.cohort) filtered = filtered.filter((b) => b.cohort === filters.cohort);
+  if (filters.crm) filtered = filtered.filter((b) => b.crm === filters.crm);
+
+  const sorted = sortBrandsWorstFirst(filtered);
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-200">
+            <th className="text-left px-5 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Brand</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Trade</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Region</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Booking Rate</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Rev at Risk</th>
+            <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((brand) => (
+            <BrandRow
+              key={brand.id}
+              brand={brand}
+              onClick={() => navigate(`/brand/${brand.id}`)}
+            />
+          ))}
+          {sorted.length === 0 && (
+            <tr>
+              <td colSpan={6} className="text-center py-10 text-gray-400 text-sm">
+                No brands match the current filters.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function BrandRow({ brand, onClick }: { brand: Brand; onClick: () => void }) {
+  const delta = brand.bookingRate - brand.peerBenchmark;
+  const isBelow = delta < 0;
+
+  return (
+    <tr
+      onClick={onClick}
+      className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors ${
+        brand.status === "recovered" ? "opacity-60" : ""
+      }`}
+    >
+      <td className="px-5 py-3.5 font-semibold text-gray-900">
+        <div className="flex items-center gap-2">
+          <TradeIcon trade={brand.trade} />
+          {brand.name}
+        </div>
+      </td>
+      <td className="px-4 py-3.5 text-gray-600">{brand.trade}</td>
+      <td className="px-4 py-3.5 text-gray-600">{brand.region}</td>
+      <td className="px-4 py-3.5">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-900">{brand.bookingRate}%</span>
+          <span
+            className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+              isBelow
+                ? "text-red-700 bg-red-50"
+                : "text-emerald-700 bg-emerald-50"
+            }`}
+          >
+            {isBelow ? "" : "+"}{delta}% vs peer
+          </span>
+        </div>
+      </td>
+      <td className="px-4 py-3.5">
+        <span className={`font-semibold ${brand.revenueAtRisk > 10000 ? "text-red-700" : "text-gray-700"}`}>
+          {fmtCurrency(brand.revenueAtRisk)}
+        </span>
+      </td>
+      <td className="px-4 py-3.5">
+        <StatusBadge status={brand.status} />
+      </td>
+    </tr>
+  );
+}
+
+function TradeIcon({ trade }: { trade: string }) {
+  const colors: Record<string, string> = {
+    HVAC: "bg-orange-100 text-orange-600",
+    Plumbing: "bg-blue-100 text-blue-600",
+    Electrical: "bg-yellow-100 text-yellow-600",
+  };
+  const letters: Record<string, string> = { HVAC: "H", Plumbing: "P", Electrical: "E" };
+  return (
+    <span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold ${colors[trade] ?? "bg-gray-100 text-gray-600"}`}>
+      {letters[trade] ?? "?"}
+    </span>
+  );
+}
