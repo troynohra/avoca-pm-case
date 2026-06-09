@@ -28,7 +28,7 @@ export function NavSidebar() {
   const parts = location.pathname.split("/");
   const activeBrandId = parts[1] === "brand" ? parts[2] : null;
   const activeBrand = activeBrandId ? brands.find((b) => b.id === activeBrandId) : null;
-  const contextLabel = "Portfolio Overview";
+  const contextLabel = activeBrand ? activeBrand.name : "Portfolio Overview";
 
   // Close on outside click
   useEffect(() => {
